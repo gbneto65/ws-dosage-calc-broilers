@@ -84,7 +84,7 @@ psg.set_options(font='calibri 16', button_element_size=(2,1))
 menu_def = [['Setup', ['% of treated water','Exit']]]
 layout = [  
             [psg.Menu(menu_def)],
-            [psg.Text(' Calculator for Automatic Dosage Systems - Broilers', text_color= 'black', font=font_title, size=input_size_lbl, justification='center', expand_x=True)],
+            [psg.Text('Calculator for Automatic Dosage Systems - Broilers', text_color= 'black', font=font_title, size=input_size_lbl, justification='center', expand_x=True)],
             [psg.Text("_" * 60)],
             [psg.Text('Number of Birds', size=input_size_lbl, justification='center', expand_x=True)],
             [psg.Slider(range=(1000,50000), resolution=1000, size=slider_secund_size, expand_x=True, default_value=10, enable_events=True ,orientation='h', key='-N_BIRDS-')],
@@ -126,7 +126,13 @@ while True:
             break
         
         if event == '% of treated water':
-           perc_treated_water = psg.popup_get_text('Input value from 1% to 99%', title='Percentage of Total Water to be Treated (%)')
+           perc_treated_water = psg.popup_get_text('Input value from 20% to 80%', title='Percentage of Total Water to be Treated (%)')
+           if int(perc_treated_water) <20 or int(perc_treated_water) >80:
+               psg.popup_error('ERROR - Only values between 20% and 80% is accepted!')
+               perc_treated_water = str(vol_of_treated_water*100)
+               window['-WATER_BE_TREAT'].update(str(round(vol_of_treated_water*100,1)) + ' %')
+           
+            
            vol_of_treated_water = float(perc_treated_water)/100
            
         window['-WATER_BE_TREAT'].update(str(round(vol_of_treated_water*100,1)) + ' %')                       
