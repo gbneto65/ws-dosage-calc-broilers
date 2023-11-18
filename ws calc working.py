@@ -7,14 +7,14 @@ APP for calculation of amount of product to be added in water using automatic wa
 The daily volume of water were calculated based on:
 https://www.thepoultrysite.com/articles/broiler-water-consumption
 According to Dr Susan Watkins and Dr G.T. Tabler of the University of Arkansas. They have monitored water intake daily over 12 consecutive flocks, reporting their results in the University's Avian
-
+git 
 @author: BRGUBO
 """
 
 import PySimpleGUI as psg
 from pandas.io import clipboard
 
-app_version = '1.0'
+app_version = '1.1'
 app_title = f'Easy WS Dosage FIT for Broilers - v:{app_version}'  
 vol_of_treated_water = .5 # percentual of the total volume of water that will be treated with product - .4 to .7 is frequently used
 
@@ -67,8 +67,6 @@ water_consump_dict = { '1': 0.01,
                        
                        }
 
-#print(water_consump_dict['1'])
-
 input_size_lbl = (30,1)
 font_size_title=12
 slider_secund_size=(20,15)
@@ -78,8 +76,6 @@ psg.theme('DarkBlue3')
 font_out = "Arial", 16, 'bold'
 input_size=(15,2)
 
-
-
 psg.set_options(font='calibri 16', button_element_size=(2,1))
 menu_def = [['Setup', ['% of treated water','Exit']]]
 layout = [  
@@ -87,11 +83,11 @@ layout = [
             [psg.Text('Calculator for Automatic Dosage Systems - Broilers', text_color= 'black', font=font_title, size=input_size_lbl, justification='center', expand_x=True)],
             [psg.Text("_" * 60)],
             [psg.Text('Number of Birds', size=input_size_lbl, justification='center', expand_x=True)],
-            [psg.Slider(range=(1000,50000), resolution=1000, size=slider_secund_size, expand_x=True, default_value=10, enable_events=True ,orientation='h', key='-N_BIRDS-')],
+            [psg.Slider(range=(1000,50000), resolution=1000, size=slider_secund_size, expand_x=True, default_value=10000, enable_events=True ,orientation='h', key='-N_BIRDS-')],
             [psg.Text('AGE', size=input_size_lbl, justification='center', expand_x=True)],
             [psg.Slider(range=(1,45), resolution=1, size=slider_secund_size, expand_x=True, default_value=7, enable_events=True ,orientation='h', key='-AGE-')],
             [psg.Text('Dosage / 1000 birds (g)', size=input_size_lbl, justification='center', expand_x=True)],
-            [psg.Slider(range=(5,15), size=slider_secund_size, resolution=5, expand_x=True, default_value=10, enable_events=True ,orientation='h', key='-DOSAGE-')],
+            [psg.Slider(range=(0,30), size=slider_secund_size, resolution=5, expand_x=True, default_value=10, enable_events=True ,orientation='h', key='-DOSAGE-')],
             [psg.Text('Mixing rate (%)', size=input_size_lbl, justification='center', expand_x=True)],
             [psg.Slider(range=(.5,5), size=slider_secund_size, resolution=.1, expand_x=True, default_value=1.5, enable_events=True ,orientation='h', key='-MIX_RATE-')],
             [psg.Text("_" * 60)],
@@ -104,7 +100,7 @@ layout = [
              psg.Text('', key='-WATER_BE_TREAT', font=font_out,size=input_size_lbl, justification='left', enable_events=True)],
             [psg.Text('Product to be added (grams):', font=font_out, size=input_size_lbl, justification='left'),
              psg.Input('', key='-OUTPUT_PROD-', font=font_out, justification='left', expand_x=False, readonly=True, size=input_size, text_color= 'blue')],
-            [psg.Text('Vol. mother soluction (liters):', key='-VOL_WATER-', font=font_out,size=input_size_lbl, justification='left', enable_events=True),
+            [psg.Text('Vol. mother solution (liters):', key='-VOL_WATER-', font=font_out,size=input_size_lbl, justification='left', enable_events=True),
              psg.Input('', key='-OUTPUT_WATER-', font=font_out, justification='left', expand_x=False, readonly=True, size=input_size, text_color= 'blue')],
             [psg.Text("_" * 60)],
             [psg.Button("Exit", key='-EXIT-', font=("Helvetica", 12, 'bold'), enable_events=True,  size=(5, 0), button_color='#7d92a5'),
@@ -116,7 +112,6 @@ layout = [
    
 
 window = psg.Window(f'{app_title}', layout,size=(550, 800), finalize=True)
-#window = psg.Window(f'{app_title}', layout, finalize=False)
 
 while True:
         
@@ -130,11 +125,10 @@ while True:
            if int(perc_treated_water) <20 or int(perc_treated_water) >80:
                psg.popup_error('ERROR - Only values between 20% and 80% is accepted!')
                perc_treated_water = str(vol_of_treated_water*100)
-               window['-WATER_BE_TREAT'].update(str(round(vol_of_treated_water*100,1)) + ' %')
-           
+               
             
            vol_of_treated_water = float(perc_treated_water)/100
-           
+        
         window['-WATER_BE_TREAT'].update(str(round(vol_of_treated_water*100,1)) + ' %')                       
         
         n_birds = int(values['-N_BIRDS-'])
@@ -151,17 +145,19 @@ while True:
         window['-OUTPUT_PROD-'].update(round(tot_product,1))
         window['-OUTPUT_WATER-'].update(round(tot_mother_sol,1))
         
+        prod = round(tot_product,1)
+        solution = round(tot_mother_sol,1)
+        text= f'\n*** {app_title} ***\n\nNumber of birds to be treated: {n_birds}\nAge (days): {bird_age}\nRecommended Dosage (grams/1000 birds): {dosage_product}\nVolume of water to be treated (liters): {round(tot_water_treatyed_day,1)} - ({round(vol_of_treated_water*100,1)} %)\n\nTotal amount of product (grams): {prod}\nMixing rate (%): {mix_rate}\nVolume of Mother Solution (Liters): {solution}\n\n\n'
         
         
         if event == '-COPY-':
-            prod = round(tot_product,1)
-            solution = round(tot_mother_sol,1)
-            text= f'\n*** {app_title} ***\nNumber of birds to be treated: {n_birds}\nAge (days): {bird_age}\nAmount of product (grams): {prod}\nMixing rate (%): {mix_rate}\nVolume of Mother Solution (Liters): {solution}\n\n\n'
-            
             clipboard.copy(text)
             psg.popup_auto_close('Recommendation copied to clipboard', non_blocking=True)
             
+            
+            
             '''
+            not implemented 
             # send email
             import win32com.client
             ol=win32com.client.Dispatch("outlook.application")
