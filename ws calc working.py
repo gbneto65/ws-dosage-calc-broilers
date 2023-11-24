@@ -9,14 +9,20 @@ https://www.thepoultrysite.com/articles/broiler-water-consumption
 According to Dr Susan Watkins and Dr G.T. Tabler of the University of Arkansas. They have monitored water intake daily over 12 consecutive flocks, reporting their results in the University's Avian
 git 
 @author: BRGUBO
+
+version 1.11
+
+added low water flow warning if age <=3 days
+
 """
 
 import PySimpleGUI as psg
 from pandas.io import clipboard
 
-app_version = '1.1'
+app_version = '1.11'
 app_title = f'Easy WS Dosage FIT for Broilers - v:{app_version}'  
 vol_of_treated_water = .5 # percentual of the total volume of water that will be treated with product - .4 to .7 is frequently used
+warning_low_flow='WARNING - AT LOWER AGES THE AUTOM. SYSTEM MAY NOT WORK PROPERLY'
 
 
 water_consump_dict = { '1': 0.01,
@@ -107,7 +113,8 @@ layout = [
              psg.Button("Copy to Clipboard", font=("Helvetica", 12, 'bold'), key='-COPY-',  enable_events=True, size=(25, 0), button_color='#7d92a5')],
             
             [psg.Text("Water consumption estimated based on Dr Susan Watkins and G.Tabler, (2009)\nhttps://www.thepoultrysite.com/articles/broiler-water-consumption ", font=('Arial', 9))],
- 
+            [psg.Text(" bbb", key='-WARNING_LOW-', font=('Arial', 12))],
+
             ]
    
 
@@ -133,6 +140,15 @@ while True:
         
         n_birds = int(values['-N_BIRDS-'])
         bird_age = int(values['-AGE-'])
+        
+        
+        if bird_age <=3: 
+            window['-WARNING_LOW-'].update(warning_low_flow, text_color='#ff0000') 
+        else:
+            window['-WARNING_LOW-'].update('') 
+        
+            
+        
         vol_water_bird_d = water_consump_dict[str(bird_age)]
         dosage_product = int(values['-DOSAGE-'])
         mix_rate = float(values['-MIX_RATE-'])
@@ -147,9 +163,15 @@ while True:
         
         prod = round(tot_product,1)
         solution = round(tot_mother_sol,1)
-        text= f'\n*** {app_title} ***\n\nNumber of birds to be treated: {n_birds}\nAge (days): {bird_age}\nRecommended Dosage (grams/1000 birds): {dosage_product}\nVolume of water to be treated (liters): {round(tot_water_treatyed_day,1)} - ({round(vol_of_treated_water*100,1)} %)\n\nTotal amount of product (grams): {prod}\nMixing rate (%): {mix_rate}\nVolume of Mother Solution (Liters): {solution}\n\n\n'
         
+        # define if warning of low water flux will be printed in the report
+        if bird_age>=4:
+            text= f'\n*** {app_title} ***\n\nNumber of birds to be treated: {n_birds}\nAge (days): {bird_age}\nRecommended Dosage (grams/1000 birds): {dosage_product}\nVolume of water to be treated (liters): {round(tot_water_treatyed_day,1)} - ({round(vol_of_treated_water*100,1)} %)\n\nTotal amount of product (grams): {prod}\nMixing rate (%): {mix_rate}\nVolume of Mother Solution (Liters): {solution}\n\n\n'
+        else:
+            text= f'\n*** {app_title} ***\n\nNumber of birds to be treated: {n_birds}\nAge (days): {bird_age}\nRecommended Dosage (grams/1000 birds): {dosage_product}\nVolume of water to be treated (liters): {round(tot_water_treatyed_day,1)} - ({round(vol_of_treated_water*100,1)} %)\n\nTotal amount of product (grams): {prod}\nMixing rate (%): {mix_rate}\nVolume of Mother Solution (Liters): {solution}\n{warning_low_flow}\n\n'
+            
         
+        # copy to clipboard
         if event == '-COPY-':
             clipboard.copy(text)
             psg.popup_auto_close('Recommendation copied to clipboard', non_blocking=True)
